@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Categories {% endblock %}
+{% block content %}
+
+<h1>{{ cats }}</h1>
+<br>
+{% if category_posts %}
+    <ul class="list-unstyled">
+    {% for post in category_posts %}
+        <li class="bg-light p-3 mb-3 rounded shadow-sm">
+        <a href="{% url 'show_profile' post.author.profile.id %}" class="text-dark">
+            {% if post.author.profile.photo %}
+                <img src="{{ post.author.profile.photo.url }}" class="rounded-circle perfect-circle">
+            {% else %}
+                <img src="{% static 'images/default_profile_pic.jpg' %}" class="rounded-circle perfect-circle">
+            {% endif %}
+            <span style="font-weight: bold;">{{ post.author.first_name }} {{ post.author.last_name }}</span>
+        </a>
+        <small class="text-muted">(@{{ post.author }})
+            • <a href="{% url 'category' post.category|slugify %}" class="text-dark">{{ post.category|capfirst }}</a>
+            • {{ post.post_date }}
+        </small>
+
+        {% if user.is_authenticated %}
+            {% if user.id == post.author.id %}
+                <small>
+                    (<a href="{% url 'update_post' post.pk %}">Edit</a> |
+                    <a href="{% url 'delete_post' post.pk %}">Delete</a>)
+                </small>
+            {% endif %}
+        {% endif %}
+        <br>
+        <h6><a href="{% url 'post_detail' post.pk %}" class="text-dark">{{ post.title }}</a></h6>
+        <p class="m-0 fs-5">{{ post.body|truncatechars:100 }}
+            {% if post.body|length >= 100 %}
+                <a href="{% url 'post_detail' post.pk %}" class="text-dark"><small> (see more)</small></a>
+            {% endif %}
+        </p>
+        {% if post.header_image %}
+            <a href="{% url 'post_detail' post.pk %}" class="text-dark">
+                <img src="{{ post.header_image.url }}" alt="Header Image" class="rounded w-25">
+            </a>
+        {% else %}
+
+        {% endif %}
+    </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <h3>This category doesn't exist yet!</h3>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+{% for message in messages %}
+  <div class="alert alert-success" role="alert">
+    {{ message }}
+  </div>
+{% endfor %}
+
+<h1>Feed</h1>
+<br>
+<ul class="list-unstyled">
+{% for post in object_list %}
+    <li class="bg-light p-3 mb-3 rounded shadow-sm">
+        <a href="{% url 'show_profile' post.author.profile.id %}" class="text-dark">
+            {% if post.author.profile.photo %}
+                <img src="{{ post.author.profile.photo.url }}" class="rounded-circle perfect-circle">
+            {% else %}
+                <img src="{% static 'images/default_profile_pic.jpg' %}" class="rounded-circle perfect-circle">
+            {% endif %}
+            <span style="font-weight: bold;">{{ post.author.first_name }} {{ post.author.last_name }}</span>
+        </a>
+        <small class="text-muted">(@{{ post.author }})
+            • <a href="{% url 'category' post.category|slugify %}" class="text-dark">{{ post.category|capfirst }}</a>
+            • {{ post.post_date }}
+        </small>
+
+        {% if user.is_authenticated %}
+            {% if user.id == post.author.id %}
+                <small>
+                    (<a href="{% url 'update_post' post.pk %}">Edit</a> |
+                    <a href="{% url 'delete_post' post.pk %}">Delete</a>)
+                </small>
+            {% endif %}
+        {% endif %}
+        <br>
+        <h6><a href="{% url 'post_detail' post.pk %}" class="text-dark">{{ post.title }}</a></h6>
+        <p class="m-0 fs-5">{{ post.body|truncatechars:100 }}
+            {% if post.body|length >= 100 %}
+                <a href="{% url 'post_detail' post.pk %}" class="text-dark"><small> (see more)</small></a>
+            {% endif %}
+        </p>
+        {% if post.header_image %}
+            <br>
+            <a href="{% url 'post_detail' post.pk %}" class="text-dark">
+                <img src="{{ post.header_image.url }}" alt="Header Image" class="rounded w-25">
+            </a>
+        {% else %}
+
+        {% endif %}
+
+        <form action="{% url 'like_post' post.pk %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="post_id" value="{{ post.id }}" class="btn btn-link">
+                {% if user in post.likes.all %}
+                    <img src="{% static 'images/liked.png' %}" alt="Liked">
+                {% else %}
+                    <img src="{% static 'images/like.png' %}" alt="Like">
+                {% endif %}
+            </button> - {{ post.total_likes }} likes
+        </form>
+    </li>
+{% endfor %}
+
+</ul>
+
+{% endblock %}
